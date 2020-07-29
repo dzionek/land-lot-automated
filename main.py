@@ -5,8 +5,8 @@ Main module of the app, running it.
 from clicker import Clicker
 
 def main():
-	clicker = Clicker(False, False)
-	clicker.bound_units()
+	clicker = Clicker(False, True)
+	clicker.run()
 
 
 if __name__ == '__main__':
