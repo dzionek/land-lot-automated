@@ -1,1 +1,1 @@
-"# land-lot-automated" 
+# land-lot-automated
