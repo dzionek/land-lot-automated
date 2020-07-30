@@ -4,8 +4,8 @@ Main module of the app, running it.
 
 from clicker import Clicker
 
-def main():
-	clicker = Clicker(False, True)
+def main() -> None:
+	clicker = Clicker(False, False)
 	clicker.run()
 
 
