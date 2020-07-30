@@ -1,74 +1,86 @@
+"""
+Module containing the Clicker class.
+"""
+
 import pyautogui as pg
-import time
-from typing import Tuple, Callable, Optional
-from functools import wraps
-from PIL import ImageChops
-from positions import *
+from time import sleep
+from typing import Optional
 
-def has_changed(func: Callable) -> Callable:
-	"""Decorator to see if anything has changed in the frame with land lot units.
+from positions import PRIMARY_UNIT_POSITION, SECONDARY_UNIT_POSITION, TERTIARY_UNIT_POSITION
+from utils import has_changed
 
-	Args:
-		func: The function to be decorated.
-
-	Returns:
-		The wrapper with the decorated function.
-
-	"""
-	@wraps(func)
-	def wrapper(*args, **kwargs) -> Tuple[int, int, int, int]:
-		"""The wrapper of the decorator."""
-		time.sleep(1)
-		pg.click(1000, 500)
-		im_before = pg.screenshot(region=DROPDOWNS_REGION).convert('RGB')
-		func(*args, **kwargs)
-		pg.click(1000, 500)
-		im_after = pg.screenshot(region=DROPDOWNS_REGION).convert('RGB')
-		difference = ImageChops.difference(im_before, im_after)
-		return difference.getbbox()
-
-	return wrapper
 
 class Clicker:
+	"""The class responsible for looping through each land lot unit and clicking accordingly to displayed data.
+
+	Attributes:
+		_loop_throuh_primary (bool):
+			True if the Clicker should iterate through the primary area, false otherwise.
+		_loop_throuh_secondary (bool):
+			True if the Clicker should iterate through the secondary area, false otherwise.
+		_bound_button_position (Tuple[int, int]):
+			The coordinates of the button to bound land lot units.
+		_ok_button_position (Optional[Tuple[int, int]]):
+			The coordinates of the button to confirm the bounding.
+
+	"""
+
 	def __init__(self, loop_through_primary: bool = True, loop_through_secondary: bool = True) -> None:
-		self.loop_through_primary = loop_through_primary
-		self.loop_through_secondary = loop_through_secondary
-		self.bound_sign_position = pg.locateCenterOnScreen('assets/bound_sign.png')
-		self.ok_button_position = None
+		"""Construct the Clicker instance.
+
+		Args:
+			loop_through_primary: True if the Clicker should iterate through the primary area, false otherwise.
+			loop_through_secondary: True if the Clicker should iterate through the secondary area, false otherwise.
+		
+		"""
+		self._loop_through_primary = loop_through_primary
+		self._loop_through_secondary = loop_through_secondary
+		self._bound_button_position = pg.locateCenterOnScreen('assets/bound_sign.png')
+		self._ok_button_position = None
 
 	def run(self) -> None:
-		self.loop_primary()
+		"""Run the automated process (Clicker)."""
+		self._loop_primary()
 
-	def loop_primary(self) -> None:
-		if self.loop_through_primary:
-			while True:
-				self.loop_secondary()
-				is_different = Clicker.go_to_next('primary')
-				if not is_different:
-					break
+	def _loop_primary(self) -> None:
+		"""Loop through the primary area and activate looping through the secondary one."""
+		if self._loop_through_primary:
+			is_different = True
+			while is_different:
+				self._loop_secondary()
+				is_different = bool(Clicker._go_to_next('primary'))
 		else:
-			self.loop_secondary()
+			self._loop_secondary()
 
-	def loop_secondary(self) -> None:
-		if self.loop_through_secondary:
-			while True:
-				self.loop_tertiary()
-				is_different = Clicker.go_to_next('secondary')
-				if not is_different:
-					break
+	def _loop_secondary(self) -> None:
+		"""Loop through the secondary area and activate looping through the tertiary one."""
+		if self._loop_through_secondary:
+			is_different = True
+			while is_different:
+				self._loop_tertiary()
+				is_different = bool(Clicker._go_to_next('secondary'))
 		else:
-			self.loop_tertiary()
+			self._loop_tertiary()
 
-	def loop_tertiary(self) -> None:
-		while True:
-			self.bound_units()
-			is_different = Clicker.go_to_next('tertiary')
-			if not is_different:
-				break
+	def _loop_tertiary(self) -> None:
+		"""Loop through the tertiary area and bound the units inside each of them."""
+		is_different = True
+		while is_different:
+			self._bound_units()
+			is_different = bool(Clicker._go_to_next('tertiary'))
 
 	@staticmethod
 	@has_changed
-	def go_to_next(unit: str) -> None:
+	def _go_to_next(unit: str) -> None:
+		"""Go to the next area of the given type.
+
+		Args:
+			unit: The type of area to be changed. Either 'primary', 'secondary', or 'tertiary'.
+		
+		Raises:
+			ValueError: If the given unit is of different kind.
+		
+		"""
 		if unit == 'primary':
 			unit_position = PRIMARY_UNIT_POSITION
 		elif unit == 'secondary':
@@ -82,19 +94,20 @@ class Clicker:
 		pg.press('down')
 		pg.press('enter')
 
-	def bound_units(self) -> None:
-		time.sleep(1)
+	def _bound_units(self) -> None:
+		"""Bound the land lot units, if it is possible."""
+		sleep(1)
 
-		pg.click(self.bound_sign_position)
+		pg.click(self._bound_button_position)
 
-		time.sleep(1.5)
+		sleep(1.5)
 
 		if not_found_center := pg.locateCenterOnScreen('assets/not_found.png'):
 			pg.click(not_found_center)
-			time.sleep(1)
+			sleep(1)
 		else:
 
-			if not self.ok_button_position:
-				self.ok_button_position = pg.locateCenterOnScreen('assets/ok_button.png')
+			if not self._ok_button_position:
+				self._ok_button_position = pg.locateCenterOnScreen('assets/ok_button.png')
 
-			pg.click(self.ok_button_position)
+			pg.click(self._ok_button_position)
