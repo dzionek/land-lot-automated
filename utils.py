@@ -4,7 +4,7 @@ from PIL import ImageChops
 from time import sleep
 import pyautogui as pg
 
-from positions import DROPDOWNS_REGION, CENTER_POSITION
+from positions import CENTER_POSITION
 
 def has_changed(func: Callable) -> Callable:
 	"""Decorator to see if anything has changed in the frame with land lot units.
@@ -25,14 +25,16 @@ def has_changed(func: Callable) -> Callable:
 			If the difference is not found, None will be returned.
 
 		"""
-		sleep(1)
+		dropdown_region = pg.locateOnScreen('assets/dropdowns.png', confidence=0.5)
 		pg.click(*CENTER_POSITION)
-		im_before = pg.screenshot(region=DROPDOWNS_REGION).convert('RGB')
+		sleep(0.5)
+		im_before = pg.screenshot(region=dropdown_region).convert('RGB')
 
 		func(*args, **kwargs)
 
 		pg.click(*CENTER_POSITION)
-		im_after = pg.screenshot(region=DROPDOWNS_REGION).convert('RGB')
+		sleep(0.5)
+		im_after = pg.screenshot(region=dropdown_region).convert('RGB')
 
 		difference = ImageChops.difference(im_before, im_after)
 		return difference.getbbox() # type: ignore

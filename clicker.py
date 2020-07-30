@@ -33,10 +33,19 @@ class Clicker:
 			loop_through_secondary: True if the Clicker should iterate through the secondary area, false otherwise.
 		
 		"""
+		sleep(1)
 		self._loop_through_primary = loop_through_primary
 		self._loop_through_secondary = loop_through_secondary
 		self._bound_button_position = pg.locateCenterOnScreen('assets/bound_sign.png')
 		self._ok_button_position = None
+
+		if self._bound_button_position is None:
+			pg.alert(
+				text='Błąd krytyczny! Nie udało się znaleźć przycisku powiązania!',
+				title='Land Lot Automated', button='OK'
+			)
+			exit()
+
 
 	def run(self) -> None:
 		"""Run the automated process (Clicker)."""
@@ -48,30 +57,29 @@ class Clicker:
 			is_different = True
 			while is_different:
 				self._loop_secondary()
-				is_different = bool(Clicker._go_to_next('primary'))
+				is_different = bool(self._go_to_next('primary'))
 		else:
 			self._loop_secondary()
 
 	def _loop_secondary(self) -> None:
 		"""Loop through the secondary area and activate looping through the tertiary one."""
 		if self._loop_through_secondary:
-			is_different = True
-			while is_different:
+			a_is_different = True
+			while a_is_different:
 				self._loop_tertiary()
-				is_different = bool(Clicker._go_to_next('secondary'))
+				a_is_different = bool(self._go_to_next('secondary'))
 		else:
 			self._loop_tertiary()
 
 	def _loop_tertiary(self) -> None:
 		"""Loop through the tertiary area and bound the units inside each of them."""
-		is_different = True
-		while is_different:
+		b_is_different = True
+		while b_is_different:
 			self._bound_units()
-			is_different = bool(Clicker._go_to_next('tertiary'))
+			b_is_different = bool(self._go_to_next('tertiary'))
 
-	@staticmethod
 	@has_changed
-	def _go_to_next(unit: str) -> None:
+	def _go_to_next(self, unit: str) -> None:
 		"""Go to the next area of the given type.
 
 		Args:
